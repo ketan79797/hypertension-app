@@ -13,26 +13,27 @@ export default async function handler(req, res) {
         messages: [
           {
             role: "system",
-            content: "You are a helpful assistant that suggests healing sound frequencies (e.g., 432Hz, 528Hz, etc.) based on the user's emotional state.",
+            content: "You suggest healing sound frequencies like 528Hz, 432Hz, etc. based on emotional moods.",
           },
           {
             role: "user",
-            content: `Suggest a sound therapy frequency for someone feeling ${mood}.`,
+            content: `Suggest the best healing sound frequency for someone feeling "${mood}" and explain why.`,
           },
         ],
+        temperature: 0.7,
+        max_tokens: 100,
       }),
     });
 
     const data = await response.json();
 
-    // Log for debug
-    console.log("OpenAI raw response:", JSON.stringify(data));
+    console.log("🔍 OpenAI raw response:", data);
 
     const reply = data?.choices?.[0]?.message?.content;
-    res.status(200).json({ reply: reply || "Error: OpenAI returned no content." });
+    res.status(200).json({ reply: reply || "No AI suggestion received." });
 
   } catch (error) {
-    console.error("OpenAI API failed:", error);
-    res.status(500).json({ reply: "AI service error: " + error.message });
+    console.error("🚨 OpenAI Error:", error);
+    res.status(500).json({ reply: "AI Error: " + error.message });
   }
 }
