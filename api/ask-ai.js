@@ -1,10 +1,6 @@
 export default async function handler(req, res) {
   const { mood } = req.body;
 
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ reply: "Missing OpenAI API Key" });
-  }
-
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -17,11 +13,11 @@ export default async function handler(req, res) {
         messages: [
           {
             role: "system",
-            content: "You are a helpful assistant that suggests healing sound frequencies like 432Hz or 528Hz based on mood.",
+            content: "You suggest healing sound frequencies like 528Hz, 432Hz, etc. based on emotional moods.",
           },
           {
             role: "user",
-            content: `Suggest a healing sound frequency for someone who is feeling ${mood}.`,
+            content: `Suggest the best healing sound frequency for someone feeling "${mood}" and explain why.`,
           },
         ],
         temperature: 0.7,
@@ -30,17 +26,14 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    const reply = data?.choices?.[0]?.message?.content;
 
-    if (reply) {
-      res.status(200).json({ reply });
-    } else {
-      console.error("OpenAI gave empty response:", data);
-      res.status(200).json({ reply: "AI did not return a suggestion." });
-    }
+    console.log("🔍 OpenAI raw response:", data);
+
+    const reply = data?.choices?.[0]?.message?.content;
+    res.status(200).json({ reply: reply || "No AI suggestion received." });
 
   } catch (error) {
-    console.error("OpenAI error:", error);
+    console.error("🚨 OpenAI Error:", error);
     res.status(500).json({ reply: "AI Error: " + error.message });
   }
 }
